@@ -1,0 +1,225 @@
+{
+  "main": {
+    "id": "f111a13cf27972d5",
+    "type": "split",
+    "children": [
+      {
+        "id": "f523e189c05873ef",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fcea1ce72b045f41",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Graphs.md",
+                "mode": "source",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "Graphs"
+            }
+          },
+          {
+            "id": "bea2776e225f887a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Disjoint-Sets.md",
+                "mode": "preview",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "Disjoint-Sets"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "63d59c17867b53af",
+    "type": "split",
+    "children": [
+      {
+        "id": "13b456e08a1543bd",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9e087760f6bfbd9b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Esplora risorse"
+            }
+          },
+          {
+            "id": "0991f629621ee17e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Ricerca"
+            }
+          },
+          {
+            "id": "4d0c9c519a81db81",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Segnalibri"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "83fcfee2a521638b",
+    "type": "split",
+    "children": [
+      {
+        "id": "471cc331f3125c4d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f98bf2aebd4b1ce4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "MapReduce.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Riferimenti a MapReduce"
+            }
+          },
+          {
+            "id": "2229f3f33c352e0d",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "MapReduce.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Collegamenti in uscita da MapReduce"
+            }
+          },
+          {
+            "id": "2477d643bb4a4ad1",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              },
+              "icon": "lucide-tags",
+              "title": "Etichette"
+            }
+          },
+          {
+            "id": "3f2425f223bf1ce9",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "MapReduce.md"
+              },
+              "icon": "lucide-list",
+              "title": "Struttura di MapReduce"
+            }
+          },
+          {
+            "id": "e92e7f40ddc1c8a5",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
+          }
+        ],
+        "currentTab": 4
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Apri selezione rapida": false,
+      "graph:Apri vista grafo": false,
+      "canvas:Crea nuova lavagna": false,
+      "daily-notes:Apri nota del giorno": false,
+      "templates:Inserisci modello": false,
+      "command-palette:Apri riquadro comandi": false,
+      "obsidian-git:Open Git source control": false
+    }
+  },
+  "active": "fcea1ce72b045f41",
+  "lastOpenFiles": [
+    "Disjoint-Sets.md",
+    "images/ds-init.png",
+    "images/Screenshot 2025-03-13 alle 10.30.21.png",
+    "images/ds-forest.png",
+    "images/aa-.png",
+    "images/Screenshot 2025-03-13 alle 10.30.02.png",
+    "Graphs.md",
+    "Advanced Algorithms.md",
+    "Deep Neural Networks Training.md",
+    "images/dl-computation-graph.png",
+    "images/Screenshot 2025-03-12 alle 11.12.29.png",
+    "images/dl-backpropagation-arch.png",
+    "images/backpropagation-2630208708.png",
+    "documents/dl-backpropagation-exa.pdf",
+    "documents/Backpropagation lecture notes.pdf",
+    "Backpropagation lecture notes.pdf",
+    "documents",
+    "Multivariate Calculus Cheat Sheet.md",
+    "Calculus of Communicating Systems.md",
+    "images/dl-kfold-validation.png",
+    "Information Theory Cheat Sheet.md",
+    "Deep Learning Introduction.md",
+    "Deep Learning.md",
+    "Probability Cheat Sheet.md",
+    "MapReduce.md",
+    "Big Data Computing.md",
+    "Apache Spark.md",
+    "Linear Algebra Cheat Sheet.md",
+    "Languages for Concurrency and Distribution.md",
+    "images",
+    "Benvenuto.md"
+  ]
+}
