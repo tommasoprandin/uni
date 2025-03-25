@@ -4,38 +4,39 @@
     "type": "split",
     "children": [
       {
-        "id": "f523e189c05873ef",
+        "id": "820ee248a35ce28e",
         "type": "tabs",
         "children": [
           {
-            "id": "fcea1ce72b045f41",
+            "id": "0efb22860301a70d",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Graphs.md",
-                "mode": "source",
-                "source": true
-              },
-              "icon": "lucide-file",
-              "title": "Graphs"
-            }
-          },
-          {
-            "id": "bea2776e225f887a",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Disjoint-Sets.md",
+                "file": "Deep Learning.md",
                 "mode": "preview",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "Disjoint-Sets"
+              "title": "Deep Learning"
+            }
+          },
+          {
+            "id": "94cea8965b5bece4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Deep Neural Networks Training.md",
+                "mode": "preview",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "Deep Neural Networks Training"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -175,7 +176,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -188,37 +190,39 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "fcea1ce72b045f41",
+  "active": "94cea8965b5bece4",
   "lastOpenFiles": [
-    "Disjoint-Sets.md",
-    "images/ds-init.png",
-    "images/Screenshot 2025-03-13 alle 10.30.21.png",
-    "images/ds-forest.png",
-    "images/aa-.png",
-    "images/Screenshot 2025-03-13 alle 10.30.02.png",
+    "images/dl-high-cn.gif",
+    "images/dl-low-cn.gif",
+    "images/cvwRU.gif",
+    "images/8RPAD.gif",
+    "Deep Learning.md",
     "Graphs.md",
+    "images/graph-bellman-ford.png",
+    "images/graph-bellman-for.png",
+    "images/Screenshot 2025-03-22 alle 18.46.43.png",
+    "images/graph-negative-cycle.png",
+    "images/Screenshot 2025-03-22 alle 18.23.22.png",
+    "Linear Algebra Cheat Sheet.md",
+    "images/graph-dijkstra-exa.png",
+    "images/Screenshot 2025-03-22 alle 11.02.40.png",
     "Advanced Algorithms.md",
+    "Programming in Spark.md",
+    "Big Data Computing.md",
+    "Apache Spark.md",
+    "Disjoint-Sets.md",
+    "Calculus of Communicating Systems.md",
+    "Languages for Concurrency and Distribution.md",
     "Deep Neural Networks Training.md",
-    "images/dl-computation-graph.png",
-    "images/Screenshot 2025-03-12 alle 11.12.29.png",
-    "images/dl-backpropagation-arch.png",
-    "images/backpropagation-2630208708.png",
     "documents/dl-backpropagation-exa.pdf",
     "documents/Backpropagation lecture notes.pdf",
     "Backpropagation lecture notes.pdf",
     "documents",
     "Multivariate Calculus Cheat Sheet.md",
-    "Calculus of Communicating Systems.md",
-    "images/dl-kfold-validation.png",
     "Information Theory Cheat Sheet.md",
     "Deep Learning Introduction.md",
-    "Deep Learning.md",
     "Probability Cheat Sheet.md",
     "MapReduce.md",
-    "Big Data Computing.md",
-    "Apache Spark.md",
-    "Linear Algebra Cheat Sheet.md",
-    "Languages for Concurrency and Distribution.md",
     "images",
     "Benvenuto.md"
   ]

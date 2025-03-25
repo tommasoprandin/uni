@@ -25,7 +25,7 @@ $$
 
 **Empirical Error**: the _empirical error_ $error_{Tr}(h)$ of hypothesis $h$ with respect to the set of samples $Tr$ is the number of examples of $Tr$ that $h$ misclassifies:
 $$
-error_{Tr}(h) = P_{(x, f(x)) \in Tr}[f(x) \neq h(x)]
+error_{Tr}(h) = P_{(x, y) \in Tr}[y \neq h(x)]
 $$
 
 Given a hypothesis $h \in \mathcal{H}$, it overfits $Tr$ if there exists another hypothesis $h' \in \mathcal{H}$ such that: 
@@ -155,7 +155,7 @@ Optimization landscapes often contain ravines—steep, narrow valleys with a gen
 - Standard gradient descent oscillates across the ravine rather than moving efficiently along it
 - Learning becomes slow and unstable
 
-This problem is mathematically described as ill-conditioning, where the condition number (ratio of largest to smallest eigenvalues of the Hessian matrix) is large.
+This problem is mathematically described as ill-conditioning, where the condition number (ratio of largest to smallest eigenvalues of the Hessian matrix) is large. The condition number can also be seen as the ratio between the maximum and minimum curvature in the objective function.
 
 ![[dl-gd-problems.png]]
 
@@ -206,8 +206,8 @@ The Hessian provides valuable information for optimization:
 
 1. **Characterizing critical points**:
     
-    - Positive definite Hessian → local minimum
-    - Negative definite Hessian → local maximum
+    - Positive definite Hessian (i.e. eigenvalues are positive) → local minimum
+    - Negative definite Hessian (i.e. eigenvalues are negative) → local maximum
     - Mixed eigenvalues → saddle point
 2. **Improving optimization**:
     
@@ -231,6 +231,12 @@ It represents the _sensitivity_ of the original functions to small changes in in
 A problem for which the condition number is very high is said to be _ill-defined_, this means that small changes in the input greatly impact the answer, thus making the solution harder to find.
 
 In machine learning context we want to have _well-defined_ loss functions (i.e. "stable" w.r.t the input) so that it is easier to find their solution. The graph for a _well-defined_ loss function is "smooth" and without steep transitions.
+
+![[dl-high-cn.gif | center ]]
+Function with high condition number. Notice how it is hard to find the minima, imagine dropping a ball in the valley it will struggle to stop in the minima.
+
+![[dl-low-cn.gif | center]]
+Function with low condition number. The minima is very well defined and a ball dropped in there will stop very soon and precisely.
 
 #### Practical Considerations
 

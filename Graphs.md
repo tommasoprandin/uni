@@ -631,6 +631,8 @@ In practice it is simpler to store _vertices_ in the heap instead of the edges d
 
 #### Prim's Algorithm (efficient implementation)
 
+^53d299
+
 This variant of the Prim's algorithm stores the vertices in a min-priority queue, ordered by a key that contains the smallest incident edge of the vertex. The queue is updated dynamically while traversing the graph.
 
 The algorithm is very similar in principle to the Dijkstra's algorithm.
@@ -767,3 +769,247 @@ $$
 O(m \log n)
 $$
 which is identical to Prim's algorithm (fast implementation).
+
+#### Properties
+
+##### Uniqueness of MST
+> Given a weighted graph $G = (V, E)$, where $\forall e, t \in E, e \neq t \implies w(e) \neq w(t)$ (i.e. weights are all distinct), then there exists exactly one MST.
+
+**Proof**
+
+Let's assume a graph $G = (V, E)$ having edges with all distinct weights, and two distinct MST of $G: A, B$.
+Then, by construction, there is at least one edge in $A$ that is not in $B$, since they are distinct.
+
+Now consider the minimum weight such edge: $e_{1} = min\{ e : e\in A \land e\not\in B \}$. It connects two vertices $u, v$.
+
+Since $A, B$ are trees, there has to be a path in both of them from $u$ to $v$; thus, if we add $e_{1}$ to $B$, we obtain a cycle in $B$ that includes $u, v$. Let's call $B' = B \cup \{ e_{1} \}$
+
+$A$ is, by hypothesis, an MST $\implies$ it does not have cycles and contains the edges with minimum possible weights. In the newly formed cycle in $B'$, there must be at least one edge $e_{2}$ that is in $B'$ but not in $A$ (otherwise $A$ would contain a cycle). Since $A$ is an MST containing $e_{1}$​ but not $e_{2}$​, $e_{1}$ is the smallest edge $\in A, \not\in B$ and all edge weights are distinct, we must have $w(e_{2})>w(e_{1})$.
+
+Now we remove this $e_{2}$ from $B', B'' = B' \setminus \{ e_{2} \}$ obtaining a tree again, since if we remove an edge from a cycle the vertices remain connected. Since $w(e_{2}) > w(e_{1})$ this new $B''$ has lower weight than the original $B$: $w(B'') < w(B)$.
+
+But this is a contradiction since $B$ is by hypothesis an MST.
+
+The converse is not generally true. Suppose the starting graph $G$ is already a tree. In that case there is only one possible spanning tree (the tree itself), and it is by necessity the minimum one even if all weights are equal.
+
+##### Second-Best MST
+> Given a weighted graph $G = (V, E)$, where $\forall e, t \in E, e \neq t \implies w(e) \neq w(t)$ (i.e. weights are all distinct), the second-best MST, that is the second smallest spanning tree is not necessarily unique.
+
+**Proof by counterexample**:
+
+![[graph-second-best-mst.png]]
+
+### Shortest Path
+
+Given a _weighted_ graph $G$, the _length_ of a path $P = v_{1}, v_{2}, \dots, v_{k}$ is defined as:
+$$
+len(P) = \sum_{i=1}^{k-1} w(v_{i}, v_{i+1})
+$$
+
+A _shortest path_ from a vertex $v$ to a vertex $u$ is a path with minimum length among all possible $u-v$ path.
+
+The _distance_ between two vertices $s$ and $t$ is the length of a shortest path from $s$ to $t$. If there is no path between them (i.e. they do not belong in the same connected component), then the distance is $+\infty$.
+$$
+dist(s, t) = \begin{cases}
+min\{ len({P}) : P \text{ is a path between }s, t \} & \text{if } s, t \in C \\
++\infty & \text{otherwise}
+\end{cases}
+$$
+
+Note that, if the graph is directed, in general $dist(u, v) \neq dist(v, u)$.
+
+![[graph-sssp-exa.png]]
+
+#### Single-Source Shortest Path (SSSP)
+
+An SSSP algorithm aims to provide all the distances from a vertex $s$ (source) to all the nodes in the graph.
+
+**Input**: A _directed_, _weighted_ graph $G$ with edge weights $w: E \to \mathbb{R}$ and a source vertex $s \in V$.
+
+**Output**: All the distances $dist(s, v)\ \forall v \in V$.
+
+Note that no algorithms are known for the previous problem that run asymptotically faster than the best SSSP algorithms in worst case. Also we will focus on directed graphs, but adapting to undirected ones is trivial.
+
+We will start with the special case of _non-negative_ edge weights: $w: E \to \mathbb{R}_{\geq0}$.
+If all the weights are identical, then the problem reduces to finding the path with less hops. 
+
+We already know an algorithm that solves this problem in linear time: [[#Breadth First Search Algorithm|BFS]].
+Actually, assuming that the weights are integers: $w: E \to \mathbb{N}$, we can always reduce a graph into one with unitary weights by replacing every edge with weight $k$ with $k$ edges of weight $1$. Then we can apply BFS and compute the answer.
+
+![[graph-sssp-reduction.png]]
+
+There are two main problems with this approach:
+1. We need integer weights, so it is still a special case.
+2. The reduction of the graph can create a much larger graph, so even if BFS is linear in the size of it, it will still be non-linear with respect to the original one.
+
+##### Dijkstra's Algorithm
+
+Dijkstra's algorithm is one of the most famous ones for finding the shortest paths from a source node to the others. It is a greedy algorithm that resembles very closely Prim's one, with the difference of considering the total length from the source instead of directly picking the smallest edge.
+It only works for graphs with non-negative weigths.
+
+This algorithm can be considered as a generalization of BFS for weighted graphs, where expansion does not go in order of less hops, but in order of shortest path.
+
+**Input**: A weighted, directed graph $G = (V, E), w:E \to \mathbb{R}_{\geq{0}}$
+**Output**: The distance from the source node $s$ to all the vertices in the graph.
+
+```pseudo
+\begin{algorithm}
+\caption{Dijkstra}
+\begin{algorithmic}
+\Procedure{Dijkstra}{$G, s$}
+	\State $X \gets \{s\}$
+	\State $len(s) \gets 0$
+	\ForAll{$v \in V$}
+		\State $len(v) \gets +\infty$
+    \EndFor
+	\While{$\exists\ e = (u, v)$ with $u \in X \land v \not\in X$}
+		\State $e' =(u', v') \gets$ an edge that minimizes $len(u') + w(e')$
+		\State $X \gets X \cup \{v'\}$
+		\State $len(v') \gets len(u') + w(e')$
+    \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+
+![[graph-dijkstra-exa.png]]
+
+One of the great advantages of this algorithm is that in each iteration it computes the _final_ distance to one additional node of the graph, despite having looked only at a part of it. The drawback is that this greediness makes it fail with graphs with negative cycles, because it will constantly pick the cycle indefinitely.o
+
+###### Complexity
+
+The complexity of the algorithms in this simple case is:
+$$
+O(n\cdot m)
+$$
+which is given by the size of the adjacency list that will be eventually traversed completely.
+
+###### Correctness
+
+Let's prove its correctness by induction showing that each time we add a vertex to $X$ we will have reached it by the shortest path (i.e. we have obtained its distance from the origin).
+
+**Invariant**:
+	$\forall\ x \in X$ , $len(x)$ is $dist(s, x)$.
+**Base case**:
+	$|X| = 1$ at the start by construction. $X = \{ s \}$ with $len(s) = 0 \implies$ the invariant holds.
+**Inductive case**:
+	Let's assume that the invariant holds for any $|X| = k \in \mathbb{N}$.
+	Let $v$ be the next vertex added to $X$ at the $k+1$ iteration, and let $(u, v)$ the arc by which $v$ is reached.
+	By construction $u$ has to be in $X$, and by the inductive hypothesis $len(u) = dist(s, u)$.
+	Now, $len(v)$ will be updated as $len(v) \gets len(u) + w(u, v)$. By construction $(u, v)$ is picked as the edge that minimizes $len(u) + w(u,v)$.
+	Since we have that $len(u) = dist(s, u)$, by adding the arc that minimizes the increment in distance from the source the new $len(v)$ will be the distance of $v$ from $s$, thus the invariant holds at the end of the $k+1$ iteration.
+
+By induction this proves the correctness of the algorithm.
+
+##### Dijkstra's Algorithm (Heaps)
+
+To optimize the time complexity of the original algorithm we need to find a way to speed up the minimum edge search. In a similar fashon as with [[#^53d299 | Prim's algorithm]], we will put vertices in a min-priority heap, indexed by the current estimate for the distance from the source vertex.
+
+```pseudo
+\begin{algorithm}
+\caption{Dijkstra}
+\begin{algorithmic}
+\Procedure{Dijkstra}{$G, s$}
+	\State $X \gets \emptyset$
+	\State $H \gets $\Call{EmptyHeap}{}
+	\ForAll{$v \in V$}
+		\State $key(v) \gets +\infty$
+		\State \Call{HeapInsert}{$H, (key(v), v)$}
+    \EndFor
+	\State $key(s) \gets 0$
+	\While{$H$ is not empty}
+		\State $v \gets $ \Call{ExtractMin}{$H$}
+		\State $X \gets X \cup \{v\}$
+		\State $len(v) \gets key(v)$
+		\ForAll{$e = (v, u) \in E$ such that $u \not\in X$}
+		\State $key(u) \gets min\{key(u), len(v) + w(e)\}$
+		\State \Call{UpdateKey}{$H, (key(u), u)$}
+        \EndFor
+    \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+
+###### Complexity
+
+This new implementation has a much better time complexity:
+1. Initialization cycle is executed $n$ times and every iteration takes $O(\log n)$ time for heap insertion $\implies$ the total complexity is $O(n \log n)$.
+2. The while cycle over the priority queue is executed $n$ times.
+	1. Extracting the minimum element from the min-heap takes $O(\log n)$ time $\implies$ total execution takes $O(n \log n)$ time.
+	2. Adding the vertex to $X$ takes constant time.
+	3. The internal for cycle is executed over the crossing edges, so it is $O(d(v))$. For each iteration, key computation and distance update takes $O(\log n)$ time $\implies$ considering that the outer while explores all the nodes we can say that the total execution time is $O\left( \sum_{v \in V}d(v) \log n \right ) = O(m \log n)$
+
+Thus in total the complexity is:
+$$
+O((m + n)\log n)
+$$
+intuitively the complexity comes from traversing the entire graph ($O(m+n)$), and from updating the min-heap ($O(\log n)$).
+
+Note: using [Fibonacci heaps](https://en.wikipedia.org/wiki/Fibonacci_heap), the complexity drops to:
+$$
+O(m + n\log n)
+$$
+
+##### Generalizing the SSSP Problem
+
+We have now seen that Dijkstra's algorithm solves the SSSP problem for graphs where _all_ the edge weights are not negative.
+
+But we would like to solve the more general problem where weights can assume any real value. This would allow us to represent things such as financial transactions with negative amounts, or operations where costs are negative (i.e. a reward).
+
+In some cases there are graphs where the shortest path is not defined. This happens when the graph contains _negative cycles_, that is cycles where the total cost is negative:
+$$
+\begin{align}
+&P = v_{1}, v_{2}, \dots, v_{k} = v_{1} \\
+&c(P) = \sum_{i = 1}^{k - 1}{w(v_{i}, v_{i+1})} \\
+&\text{if } c(P) < 0 \implies P \text{ is a negative cycle}
+\end{align}
+$$
+
+![[graph-negative-cycle.png]]
+
+For graphs without such cycles the SSSP is well-defined, but is generally _NP-hard_, that is no polynomial-time algorithm exists for it (as far as currently known).
+
+Now we can make a further observation: a shortest path cannot contain ever a cycle, even if it is positive weight. Intuitively this comes from the fact that looping around to get back to the same place is useless at best if the weight is zero, and surely leads to a greater cost if total cycle weight is positive.
+
+This means that we can completely ignore cycles and assume to compute _cycle-free shortest paths_, which have $\leq n-1$ edges (cycle-free graphs are forests [[#Properties of Graphs|see]]).
+
+##### Bellman-Ford's Algorithm
+
+We want to update the original Dijkstra's algorithm to deal with negative-weight edges. The intuition is that weights should be continuously updated for $n-1$ times checking over all edges. At the end all vertices will have the correct distance from the source. It obviously is slower than Dijkstra, but it is the price to pay for increased flexibility.
+
+**Input**: A directed, weighted graph $G$, $w: E \to \mathbb{R}$ and a source vertex $s \in V$.
+**Output**: Either $dist(s, v)\ \forall v \in V$, or a declaration that $G$ contains a negative cycle.
+
+```pseudo
+\begin{algorithm}
+\caption{Bellman-Ford}
+\begin{algorithmic}
+\Procedure{BellmanFord}{$G, s$}
+	\ForAll{$v \in V$}
+		\State $len(v) \gets +\infty$
+    \EndFor
+	\State $len(s) \gets 0$
+	\For{$n-1$ iterations}
+		\ForAll{$e = (u, v) \in E$}
+			\State $len(v) \gets min\{len(v), len(u) + w(e)\}$
+        \EndFor
+    \EndFor
+	\ForAll{$e = (u, v) \in E$}
+		\If{$len(v) > len(u) + w(e)$}
+			\Return There is a negative cycle
+        \EndIf
+    \EndFor
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+
+
+![[graph-bellman-ford.png]]
+###### Complexity
+
+The complexity is clearly:
+$$
+O(n\cdot m)
+$$

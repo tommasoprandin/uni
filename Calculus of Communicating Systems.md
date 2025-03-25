@@ -218,3 +218,269 @@ $$
 $$
 
 All these rules will allow us to write an **interpreter** for CCS systems by pattern matching with the rules and decomposing them recursively until the axioms are obtained. The result of the interpreter will be the complete _transition system_.
+
+### Value Passing CCS
+
+Up until now we have only seen pure (synchronization) CCS, which means that processes can interact and synchronize only by pure message passing.
+
+For a greater convenience we can also define a theory in which processes can have internal variables and messages can carry data. This is what is actually implemented in practice in programming languages.
+
+This theory is called _value passing_ CCS, we will take a brief look at it for its practical implementations. However, since it is not more expressive then normal CCS (i.e. it cannot represent anything more that normal CCS), it is not actually used in theory, because it brings more complexity without actual theoretical use.
+
+**Example**:
+
+Consider this incrementing buffer example, that takes a value $n \in \mathbb{N}$ in input and outputs the value stored incremented by one:
+
+With value passing we can express it as:
+$$
+\begin{align}
+&B := in(x).B'(x) \\
+&B'(x) := \overline{out}(x+1).B
+\end{align}
+$$
+a much more convenient notation.
+
+Notice that this theory only allows us to work with _closed_ programs, that is programs where variables in the system are bound to some value or binding structure (a function parameter or expression) and there are not free variables. This means that program execution is completely self-contained and deterministic and it doesn't depend on external state.
+We also will assume variables are in $\mathbb{N}$.
+
+#### Syntax
+
+Let:
+- $x, y, \dots \in Var$ be the variables for values
+- $a, b, c \in \mathcal{A}$ be the channels
+- $k(x_{1}, \dots, x_{n}) \in \mathcal{K}$ be the process constants
+- $e \in Expr$ be the set of arithmetic or boolean expressions:
+$$
+\begin{align}
+&e := k\ |\ e + e\ |\ e \cdot e\ |\ \dots \\
+&b := e = e\ |\ e \leq e\ |\ \neg b\ |\ b \land b\ | \dots
+\end{align}
+$$
+
+Then the formal syntax for CCS processes is:
+$$
+P, Q := k(e_{1}, \dots, e_{n})\ |\ a(x).P\ |\ \bar{a}(x).P\ |\ \tau.P\ |\ \text{if } b \text{ then } P\ |\ \sum_{i \in I}P_{i} \ |\ P|Q\ |\ P\setminus L\ |\ P[f]
+$$
+with many contructs following normal CCS.
+
+#### Behaviour
+
+##### ACT
+We now have to distinguish between input and output for action prefixing:
+- **Input**:
+$$
+\frac{}{a(x).P \xrightarrow{{a}(n)} P\left[ \frac{n}{x} \right]} \text{ for } n\geq 0
+$$
+This means the process is willing to accept an actual value $n$ on the $a$ channel and bind it to its $x$ variable (i.e. every free occurrence of $x$ is replaced by $n$).
+- **Output**
+$$
+\frac{}{\bar{a}(e).P \xrightarrow{\bar{a}(n)} P} \text{ where } n \text{ is the result of evaluating }e
+$$
+This means the process has an internal expression $e$ bound to its internal variable, and it is willing to send the value of the expression evaluated.
+
+- **Silent** (synchronization) interaction remains the same
+
+##### CON
+Let's generalize the definition for parametrizing process constants by value variables:
+$$
+\frac{P\left[ \frac{v_{1}}{x_{1}},\dots, \frac{v}{x_{n}} \right] \xrightarrow{\alpha} P'}{A(e_{1}, \dots, e_{n}) \xrightarrow{\alpha} P'} \text{ assuming } A(e_{1}, \dots, e_{n}) := P \text{ and each } e_{i} \text{ has value } v_{i}
+$$
+
+In simpler terms: To figure out what a parameterized process can do, plug in the actual values of its parameters, see what actions the resulting process can take, and those are the actions the parameterized process can take.
+
+This rule is crucial because it connects the abstract definition of a parameterized process with its concrete behavior when specific values are provided.
+
+##### COND
+
+Since processes in value-passing CCS can manipulate data, it is natural to add an 'if then else' construct to the language. Formally:
+$$
+\begin{cases}
+\frac{P \xrightarrow{\alpha} P'}{\textbf{if} \text{ bexp } \textbf{then } P  \textbf{ else } Q \xrightarrow{\alpha} P'} & \text{ if bexp evaluates to true} \\
+\frac{Q \xrightarrow{\alpha} Q'}{\textbf{if} \text{ bexp } \textbf{then } P  \textbf{ else } Q \xrightarrow{\alpha} P'} & \text{ if bexp evaluates to false} \\
+\end{cases}
+$$
+
+Notice that the 'if then else' construct is equivalent to the non-deterministic choice between two 'if then' constructs:
+$$
+\text{if } b \text{ then } P \text{ else } Q \equiv \text{if } b \text{ then } P + \text{ if } \neg b \text{ then } Q
+$$
+It may appear that parallel composition would be semantically equivalent, but parallel composition would spawn a "garbage" process that would never be used and stay there forever.
+
+### Encoding Value-Passing CCS into Pure CCS
+
+Define an encoding function $[[\quad]]: \text{CCS-VP} \to \text{CCS}$. It is possible to implement it by following the conversion rules:
+
+- $[[a(x).P]] \to \sum_{n \in \mathbb{N}}{a_{n}.\left[ \left[ P\{\frac{n}{x}\} \right] \right]}$
+- $[[\bar{a}(e).P]] \to \bar{a}_{n}.[[P]]$ if $e$ evaluates to $n$.
+- $[[\tau.P]] \to \tau.[[P]]$
+- $\left[ \left[ \sum_{i \in \mathbb{N}}{P_{i}}\right] \right] \to \sum_{i\in \mathbb{N}}{[[P_{i}]]}$
+- $[[P|Q]] \to [[P]] | [[Q]]$
+- $[[P\setminus L]] \to [[P]] \setminus \{ a_{n}:a \in L \}$
+- $[[P[f]]] \to [[P]][f']$ where $f'(a_{n}) = f(a)_{n}$
+- $[[\text{if } b \text{ then } P ]] \mapsto \begin{cases}
+	[[P]] & b = True \\
+	0 & b = False
+\end{cases}$
+- $[[K(e_{1}, \dots, e_{n})]] \to K_{n_{1}, \dots, n_{n}}$
+
+**Theorem**:
+> Let $[[\quad]]: \text{CCS-VP} \to \text{CCS}$ as above.
+> Then, for all CCS-VP programs P
+> 1. if $P \xrightarrow{\alpha} P'$ then $[[P]] \xrightarrow{\hat{\alpha}} [[Q]]$
+> 2. if $[[P]] \xrightarrow{\hat{\alpha}} Q$ then there is $P'$ such that $P \xrightarrow{\hat{\alpha}} P'$ and $[[P']] = Q$
+> Where:
+> $$
+\hat{\alpha} = \begin{cases}
+a_{n} & \text{if } \alpha = a(n) \\
+\overline{a_{n}} & \text{if } \alpha = \bar{a}(n) \\
+\tau & \text{if } \alpha = \tau
+\end{cases}$$
+
+This theorem shows that properties are mantained by the translations, that is CCS-VP and pure CCS are semantically equivalent.
+
+### Introduction to Behavioral Equivalence
+
+In the Calculus of Communicating Systems (CCS), behavioral equivalence allows us to determine when two processes behave in the same way. This is crucial for verifying that an implementation meets its specification, or for substituting one component with another.
+
+Consider the following example: $$ \begin{align} CS &= \overline{pub}.\overline{coin}.coffee.CS \\ CM &= coin.coffee.CM \\ Office &= (CS \mid CM) \setminus {coin, coffee} \end{align} $$
+
+And the specification: $$Spec = \overline{pub}.Spec$$
+
+We want to verify: $Office \sim Spec$
+
+Where $\sim$ represents some notion of behavioral equivalence.
+
+#### Properties of Behavioral Equivalence
+
+An equivalence relation $\sim$ should satisfy these properties:
+
+1. **Reflexive**: $P \sim P$
+2. **Symmetric**: If $P \sim Q$ then $Q \sim P$
+3. **Transitive**: If $P \sim Q$ and $Q \sim R$ then $P \sim R$
+
+Additionally, for system composition, we need:
+
+1. **Congruence/Compositionality**: If $P \sim Q$, then for every context $C[\cdot]$, $C[P] \sim C[Q]$
+
+This last property is essential because it allows us to replace equivalent components within a larger system.
+
+For example, if: $$ \begin{align} Spec &= Spec_1 \mid Spec_2  \\
+Sys_1 &\sim Spec_1  \\
+ Sys_2 &\sim Spec_2 \end{align} $$
+
+Then compositionality ensures: $Sys_1 \mid Sys_2 \sim Spec_1 \mid Spec_2$
+
+### Referential Transparency
+
+Referential transparency means that replacing an expression with its value doesn't alter the behavior of the program:
+
+$$P = \ldots exp \ldots$$
+
+Replacing $exp$ by its value should not change $P$'s behavior.
+
+For example, in mathematics: $$ \begin{align} x + 0y &= 2 \\ x + x &= 1 \end{align} $$
+
+We can deduce $x = \frac{2}{3}$ and $y = -1$, and substituting these values preserves the equations.
+
+### Observational Equivalence
+
+Behavioral equivalence depends solely on observable behavior. Different notions of equivalence depend on what we consider observable:
+
+- Messages
+- Time
+- Cost
+- etc.
+
+###  Same Transitions (Basic Equivalence)
+
+This is the simplest form, where processes with the same transitions are considered equivalent.
+
+Example: $$ \begin{align} A &= a.0 \\ B &= (a.0) + b \end{align} $$
+
+When we only observe transitions, $A \sim B$ because both can perform an 'a' action.
+
+However, this equivalence is not compositional. In the context $C[\cdot] = A + [\cdot]$: $$ \begin{align} C[A] &= A + A \\ C[B] &= A + B \end{align} $$
+
+$C[A]$ and $C[B]$ no longer have the same transitions, as $C[B]$ can also perform a 'b' action.
+
+### Trace Equivalence
+
+Trace equivalence considers the sequences of actions a process can perform:
+
+$$Tr(P) = {\alpha_1\ldots\alpha_n \mid P \stackrel{\alpha_1}{\longrightarrow} P_1 \stackrel{\alpha_2}{\longrightarrow} P_2 \ldots \stackrel{\alpha_n}{\longrightarrow} P_n}$$
+
+$P \sim_T Q$ if $Tr(P) = Tr(Q)$
+
+Trace equivalence is:
+
+- An equivalence relation
+- Based on observable behavior
+- Compositional
+
+Example: $$ \begin{align} CTM &= coin.(coffee.CTM + tea.CTM)\\CTM' &= coin.coffee.CTM' + coin.tea.CTM' \end{align} $$
+
+These are trace equivalent: $Tr(CTM) = Tr(CTM') = (coin \cdot (coffee + tea))^* \cdot coin$
+
+In the context of the Office system: $$ \begin{align} Office &= (CS \mid CTM) \setminus {coin, coffee, tea}\\Office' &= (CS \mid CTM') \setminus {coin, coffee, tea} \end{align} $$
+
+Trace equivalence guarantees: $Office \sim_T Office'$
+
+### Completed Trace Equivalence
+
+Trace equivalence doesn't distinguish between deadlock states. Completed trace equivalence addresses this:
+
+$$CTr(P) = {\alpha_1\ldots\alpha_n \mid P \stackrel{\alpha_1}{\longrightarrow} P_1 \stackrel{\alpha_2}{\longrightarrow} P_2 \ldots \stackrel{\alpha_n}{\longrightarrow} P_n \not\rightarrow}$$
+
+Where $P_n \not\rightarrow$ means $P_n$ cannot perform any action (deadlock).
+
+$P \sim_{CT} Q$ if $P \sim_T Q$ and $CTr(P) = CTr(Q)$
+
+For our example: $$CTr(Office) \neq CTr(Office')$$
+
+Therefore: $Office \not\sim_{CT} Office'$
+
+Importantly, completed trace equivalence is **not compositional**.
+
+### Bisimilarity
+
+Bisimilarity is a stronger equivalence that considers intermediate states:
+
+**Definition**: A binary relation $\mathrm{Re}l \subseteq Proc \times Proc$ is a bisimulation if for all $P,Q \in Proc$ with $P\ \mathrm{Re}l\  Q$:
+
+- For all $P \stackrel{\alpha}{\longrightarrow} P'$, there exists $Q \stackrel{\alpha}{\longrightarrow} Q'$ and $P'\ \mathrm{Re}l\  Q'$
+- For all $Q \stackrel{\alpha}{\longrightarrow} Q'$, there exists $P \stackrel{\alpha}{\longrightarrow} P'$ and $P' \ \mathrm{Re}l\ Q'$
+
+$P \sim Q$ if there exists a bisimulation $R$ such that $P \ \mathrm{Re}l\ Q$
+
+Example with infinite states: $$ \begin{align} A &= a.A\\B &= (a.B) + b \end{align} $$
+
+There exists a bisimulation $\mathrm{Re}l = {(A, ((B \cdot b)^k \cdot b) \mid k \in \mathbb{N})}$ showing that $A \sim B$.
+
+For our coffee machine example: $$ \begin{align} CTM &= coin.(coffee.CTM + tea.CTM)\\CTM' &= coin.coffee.CTM' + coin.tea.CTM' \end{align} $$
+
+We can prove $CTM \not\sim CTM'$ by contradiction:
+
+- Assume $CTM \sim CTM'$
+- Then there's a bisimulation $R$ with $CTM \mathrm{Re}l CTM'$
+- After $CTM \stackrel{coin}{\longrightarrow} CTM_1$ where $CTM_1 = coffee.CTM + tea.CTM$
+- There should be $CTM' \stackrel{coin}{\longrightarrow} CTM_1'$ with $CTM_1 , R , CTM_1'$
+- But $CTM_1'$ could be either $coffee.CTM'$ or $tea.CTM'$
+- Neither can match both the coffee and tea transitions of $CTM_1$
+- Contradiction: $CTM \not\sim CTM'$
+
+## Summary of Equivalence Relations
+
+From weakest to strongest:
+
+1. **Same Transitions**: Simple but not compositional
+2. **Trace Equivalence**: Compositional but ignores branching structure
+3. **Completed Trace Equivalence**: Considers deadlocks but not compositional
+4. **Bisimilarity**: Strongest, considers branching structure and is compositional
+
+Bisimilarity is generally preferred because it preserves the most behavioral properties while ensuring compositionality.
+
+## Relationship to Specification Verification
+
+When we have: $$ \begin{align} Office &= (CS \mid CM) \setminus {coin, coffee}\\Spec &= \overline{pub}.Spec \end{align} $$
+
+We want to verify $Office \sim Spec$ using an appropriate equivalence relation. Bisimilarity provides the strongest guarantees, ensuring that the implementation not only produces the same sequences of observable actions but also preserves the branching structure of choices.
