@@ -279,3 +279,25 @@ There it follows an example of gradient computation on a feedforward neural netw
 To simplify the visualization and representation of computations we introduce a notation that encodes variables as nodes and edges as operations between them:
 
 ![[dl-computation-graph.png]]
+
+### Automatic Differentiation
+
+Automatic differentiation (AD) is a computational technique that efficiently calculates the derivatives needed during the backpropagation phase of neural network training.
+Automatic differentiation tracks derivatives through all computational operations by applying the chain rule systematically. Unlike numerical differentiation (which approximates derivatives) or symbolic differentiation (which manipulates mathematical expressions), AD computes exact derivatives efficiently by breaking calculations into elementary operations and applying differentiation rules.
+
+#### Neural Network Implementation
+
+1. **Forward Pass**: During the forward pass, AD builds a computational graph that records all operations performed to compute the loss function.
+    
+2. **Reverse-Mode AD**: Backpropagation uses reverse-mode AD, which efficiently calculates gradients of a scalar output (loss) with respect to many inputs (model parameters). It's called reverse-mode because it starts computation from the output layer back to the input.
+    
+3. **Chain Rule Application**: Starting from the loss function, AD propagates derivatives backward through the computational graph, applying the chain rule at each step.
+4. **Gradient Accumulation**: As backpropagation traverses the graph, gradients are accumulated for parameters used multiple times.
+    
+Frameworks like TensorFlow and PyTorch implement AD using:
+
+1. **Dual Number Representation**: Each value tracks both its primal value and its gradient.
+    
+2. **Operator Overloading**: Mathematical operations are overloaded to compute both the result and the necessary information for gradient calculation.
+    
+3. **Computational Graph**: Either static (TensorFlow 1.x) or dynamic (PyTorch, TensorFlow Eager) graphs record the operations.

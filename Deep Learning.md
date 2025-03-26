@@ -3,3 +3,4 @@
 - [[Information Theory Cheat Sheet]]
 - [[Deep Learning Introduction]]
 - [[Deep Neural Networks Training]]
+- [[Regularization]]

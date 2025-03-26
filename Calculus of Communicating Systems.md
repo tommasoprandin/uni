@@ -269,7 +269,7 @@ with many contructs following normal CCS.
 We now have to distinguish between input and output for action prefixing:
 - **Input**:
 $$
-\frac{}{a(x).P \xrightarrow{{a}(n)} P\left[ \frac{n}{x} \right]} \text{ for } n\geq 0
+\frac{}{a(x).P \xrightarrow{a(n)} P\left[ \frac{n}{x} \right]} \text{ for } n\geq 0
 $$
 This means the process is willing to accept an actual value $n$ on the $a$ channel and bind it to its $x$ variable (i.e. every free occurrence of $x$ is replaced by $n$).
 - **Output**

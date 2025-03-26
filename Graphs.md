@@ -1007,9 +1007,157 @@ We want to update the original Dijkstra's algorithm to deal with negative-weight
 
 
 ![[graph-bellman-ford.png]]
+###### Correctness
+
+Let $len(i,v)$ be the length of a shortest path from $s$ to $v$ that contains no more than $i$ edges (arcs).
+Since the shortest path from $s$ to $v$ contains no more than $n-1$ edges (imagine a tree with all the vertices connected in line resembling a linked list. It will have $n-1$ edges because its a tree and the shortest path will necessarily pass there), it is sufficient to prove that after $i$ iterations $len(v) \leq len(i, v)$. This means that every iteration adds an edge that improves the cost of the estimate, that is the cost after relaxation at the end of the iteration is better than (or equal) at the beginning.
+
+By induction on the iterations $i$:
+- **Base case**: 
+	$$
+i=0 \implies \begin{cases}
+len(s) = 0 \leq len(0, s) = 0 \\
+len(v) = +\infty = len(0, v)  & \forall v \in V, v\neq s
+\end{cases}
+$$
+- **Inductive hypothesis**: $len(v) \leq len(k, v)\ \forall 1 \leq k < i$
+	Take $i\geq 1$ and a shortest path from $s$ to $v$ with $\leq i$ edges. Let $e = (u, v)$ be the last edge of this path. Then, by splitting the path in two parts:
+	$$
+	len(i, v) = len(i-1, u) + w(u, v)
+	$$
+	Since we are assuming that we have a shortest path from $s$ to $v$ with at most $i$ edges, all its sub-paths are shortest paths, hence removing the last edge of the path we obtain a shortest path with at most $i-1$ edges from $s$ to $u$.
+
+	Now by the inductive hypothesis $len(u) \leq len(i-1, u)$.
+	In the $i$-th iteration we update:
+	$$
+	\begin{align}
+	len(v) & = min\{ len(v),  & len(u) + w(u, v) \} \\
+	 & & \leq len(i-1, u) + w(u,v)  \\
+	 & & = len(i, v)  \\
+	& \leq len(i, v)
+	\end{align}
+	$$
 ###### Complexity
 
 The complexity is clearly:
 $$
 O(n\cdot m)
 $$
+
+#### All-Pairs Shortest Paths (APSP)
+
+The further extension of [[#Single-Source Shortest Path (SSSP)]] is to find _for all_ vertices in the graph the distance _for all_ the other vertices (eventually infinite if a vertex is not reachable from another).
+
+More formally:
+**Input**: A directed, weighted graph $G = (V, E)$
+**Output**: One of the following:
+- $dist(u, v)\ \forall$ ordered vertex pairs 
+- A declarationn that $G$ contains a negative cycle
+
+The obvious solution would be to invoke [[#Bellman-Ford's Algorithm]] once for every vertex in $V$. The resulting complexity would then be $O(mn^2)$, which is quite bad.
+
+Using ideas from dynamic programming we can actually improve the time complexity by splitting this problem in smaller sub-problems.
+
+##### Bellman-Ford's Algorithm (dynamic programming formulation)
+We can design a variant of the BF algorithm that uses dynamic programming.
+As used in the demonstration we observe that sub-paths of shortest paths are shortest paths themselves, obviously to a different destination and, more importantly, with fewer edges.
+
+More precisely let $P$ be a shortest path from $s$ to $v$. Then all the sub-paths $P' \subset P$ are shortest paths from the starting node of $P'$ to the final node (if $P'$ was not a shortest path then neither $P$ would be, contradicting the hypothesis).
+
+So the idea is to create new subproblems by restricting the number of edges allowed in a path, with smaller subproblems having smaller edge budgets.
+
+In fact lets define all the subproblems as computing $len(i, v)$ for any possible $i$ and any other vertex $v \in V$. Recall that $len(i, v)$ is the length of the shortest path from $s$ to $v$ with no more than $i$ edges.
+From the subproblem definition we obtain that there are $n$ vertices $\cdot$ $n-1$ edges in the shortest path at most $\implies O(n^2)$ subproblems.
+
+We observe that this formulation doesn't reduce the size of the input for each subproblem, but only the allowable size of the output, thus its complexity.
+
+###### Bellman-Ford Recurrence
+
+The recurrence formulation for BF in dynamic programming form is:
+$$
+len(i, v) = \begin{cases}
+0 & \text{if } i=0 \land v=s \\
++\infty & \text{if } i = 0 \land v\neq s \\
+min\begin{cases}
+len(i-1, v) & \text{adding edges is useless} \\
+min_{(u, v) \in E}\{ len(i-1, u) + w(u, v) \} & \text{otherwise}
+\end{cases}
+\end{cases}
+$$
+
+A variant of this formulation adapted for the APSP problem has complexity (not proved here)
+$$
+O(n^3\log n)
+$$
+
+##### Floyd-Warshall Algorithm
+
+The problem with the [[#Bellman-Ford Recurrence]] formulation is that is doesn't reduce the input size for the subproblems, we want to find a way to do so in order to reduce the complexity further.
+
+The idea is to, instead of limiting the number of edges allowed in the path calculation, restrict the _identities_ of the vertices allowed in a path (i.e. the paths can only pass through only certain vertices).
+
+Let's define the subproblems:
+Assume the vertices are labelled from $1, \dots, n$.
+The subproblem is to compute $dist(u, v, k)$ which is the length of the shortest path from $u$ to $v$ that uses only vertices with label $\leq k$ as internal vertices, and does not contain a directed cycle. If no such path exists the distance is $+\infty$.
+
+With this definition we obtain a number of subproblems:
+$$
+O(n^3) \gets \begin{cases}
+n  & \text{sources} \\
+n  & \text{destinations} \\
+n + 1  & \text{subsets}
+\end{cases}
+$$
+
+The algorithm consists in expanding iteratively the set of allowed vertices one at a time, until all the vertices are allowed.
+
+The payoff of this formulation is that now there are only two candidates for the optimal solution to a subproblem, which consists of the path that picks the newly added vertex $k$ and the one that does not.
+
+![[graph-fw-subproblems.png]]
+
+Thus the complexity is constant for all the subproblems and the total complexity is:
+$$
+O(1) \text{ (subproblem complexity)} \cdot O(n^3) \text{ (number of subproblems)} \implies O(n^3)
+$$
+
+```pseudo
+\begin{algorithm}
+\caption{Floyd-Warshall}
+\begin{algorithmic}
+\Procedure{FloydWarshall}{$G$}
+	\State\Call{LabelVertices}{$V$}
+	\Comment{Label all vertices from 1 to n}
+	\State $A \gets $Tensor $\in \mathbb{R}^{n \times n \times n+1}$
+	\Comment{A[u][v][k] contains dist(u, v, k)}
+	\For{$u \gets 1$ to $n$}
+	\Comment{Initialize distances (k = 0)}
+		\For{$v \gets 1$ to $n$}
+			\If{$u = v$}
+				\State $A[u, v, 0] \gets 0$
+			\Elif{$e = (u, v) \in E$}
+				\State $A[u, v, 0] \gets w(e)$
+			\Else
+				\State $A[u, v, 0] \gets +\infty$
+			\EndIf
+        \EndFor
+    \EndFor
+	\For{$k \gets 1$ to $n$}
+	\Comment{Solve subproblems}
+		\For{$u \gets 1$ to $n$}
+			\For{$v \gets 1$ to $n$}
+				\State $A[u, v, k] \gets min\{A[u, v, k-1], A[u, k, k-1] + A[k, v, k-1]\}$
+	        \EndFor
+        \EndFor
+    \EndFor
+	\For{$u \gets 1$ to $n$}
+		\If{$A[u, v, n] \lt 0$}
+			\Return "G has a negative cycle"
+        \EndIf
+    \EndFor
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+
+
+Finding an algorithm faster that cubic for APSP (i.e. with complexity $O(n^{3-\epsilon})$) is still an open problem!
