@@ -101,7 +101,7 @@ Common activation functions include:
 4. **Leaky ReLU**: $f(x) = \max(\alpha x, x)$ where $\alpha$ is a small constant
     
     - Addresses the "dying ReLU" problem by allowing a small gradient when inactive
-5. **Softmax**: $\sigma(z)_i = \frac{e^{z_i}}{\sum_{j=1}^K e^{z_j}}$
+5. **Softmax**: $\sigma(z)_i = \frac{e^{z_i}}{\sum_{j=1}^K e^{z_j}}$ ^a39cb4
     
     - Converts a vector of values to a probability distribution
     - Commonly used in the output layer for multi-class classification

@@ -4,3 +4,5 @@
 - [[Deep Learning Introduction]]
 - [[Deep Neural Networks Training]]
 - [[Regularization]]
+- [[Optimization (NN)]]
+- [[Convolutional Neural Networks]]

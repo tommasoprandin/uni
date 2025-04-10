@@ -1,1 +1,3 @@
 - [[Graphs]]
+- [[Complexity Classes and NP-hardness]]
+- [[Approximation Algorithms]]

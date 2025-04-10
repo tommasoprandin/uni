@@ -799,7 +799,7 @@ The converse is not generally true. Suppose the starting graph $G$ is already a 
 
 ![[graph-second-best-mst.png]]
 
-### Shortest Path
+### Shortest Path(s)
 
 Given a _weighted_ graph $G$, the _length_ of a path $P = v_{1}, v_{2}, \dots, v_{k}$ is defined as:
 $$
@@ -1161,3 +1161,111 @@ $$
 
 
 Finding an algorithm faster that cubic for APSP (i.e. with complexity $O(n^{3-\epsilon})$) is still an open problem!
+
+There is a further improvement for the Floyd-Warshall algorithm that improves the complexity to $O(nm)$ if there is a negative cycle.
+
+We observe that Bellman-Ford can detect a negative cycle in $O(nm)$ time, so the idea is to run it before executing Floyd-Warshall to do negative cycle detection.
+
+The problem with this approach is that this does not work by picking a random vertex in the graph as is, because it will only be able to detect cycles in the graph made by the reachable destinations from the source vertex.
+
+Solving this is pretty easy though: pick a random vertex, then for all the other vertices add a zero-weight edge that connects the source with all the possible destinations. Now, by running BF before it can detect any negative cycle in the graph, without compromising the correctness.
+
+In the case no negative cycles are detected we can run FW on the original graph.
+
+### Maximum Flows
+
+A _flow network_ is a directed graph $G = (V, E)$ such that every edge has a _capacity_ $c(e) \in \mathbb{R}^+$, along with a designated _source_ $s \in V$, and a designated _sink_ $t \in V$.
+For convenience we will write $c(e) = 0$ if $e \not\in E$. Additionally we impose that no edges enter the _source_, and no edges exits the _sink_.
+
+![[graph-flow-network.png]]
+
+A _flow_ is a function $f: E \to \mathbb{R}^+$ satisfying the following constraints:
+1. **capacity**: $\forall e \in E\quad f(e) \leq c(e)$, that is the flow passing through an edge cannot exceed its capacity
+2. **conservation**: $\sum_{v \in V}f(u, v) = \sum_{v \in V}d(v, u)$, that is for every vertex the sum of the incoming flux must equal the sum of outgoing flux (it cannot disappear). Think about the Kirchoff's law for currents in nodes.
+
+The _value_ of a flow is $|f| = \sum_{v \in V}f(s, v)$, which is the total outgoing flux from the source.
+
+#### Maximum Flow Problem 
+The **maximum flow problem** aims at estabilshing a flow of maximum value, given a flow network.
+$$
+f^\star = \arg\max_{f}|f|
+$$
+
+![[graph-max-flow.png]]
+
+Maximum flow reduces to a linear programming problem (as many other), but there are more efficient special-purpose algorithms. We will see one (Ford-Fulkerson), but there are more efficient (and complex) algorithms.
+
+A natural idea is to be greedy:
+1. Find a path from $s$ to $t$, this can be done in linear time with BFS.
+2. Send as much flow along it as possible (i.e. respecting the capacity constraint).
+3. Update residual capacity for every edge.
+4. Remove edges with no residual capacity.
+5. Repeat until the graph has no $s-t$ paths anymore.
+
+Unfortunately this will not always work, since greediness will lead us to suboptimal choices, but without a way to improve them incrementally (i.e. undo them).
+
+**Idea**: We need to add a way to revise some of the flow later in the algorithm, how? By adding a "back" flow through new edges in the opposite direction. Anytime we push some flow through an edge we add an edge in the opposite direction (if not already existing), that can push back the same amount of flow added, thus giving us the possibility in the future to roll back our decisions.
+
+##### Residual Network
+
+Given a flow network $G$ and a flow $f$, the _residual network_ of $G$ w.r.t. the flow $f, $G_{f}$, is a network with vertex set $V$ and with edge set $E_{r}$ as follows:
+
+For every edge $e = (u, v) \in E$
+- if $f(e) < c(e)$ add $e$ to $G_{f}$ with capacity $c_{f}(e) = c(e) - f(e)$ (i.e. subtract the flow used to obtain residual capacity)
+- if $f(e)>0$, add another edge $(v, u)$ to $G_{f}$ with capacity equal to the flow passed through: $c_{f}(e) = f(e)$ (i.e. add an edge where we can push back all the flow we added so that we can completely undo our previous choices)
+
+#### Ford-Fulkerson's Algorithm
+
+The Ford-Fulkerson algorithm repeatedly finds an $s-t$ path $P$ in $G_{f}$ (e.g. using BFS), and uses $P$ to increase the current flow.
+
+$P$ is called an _augmenting path_. The algorithm terminates when there are no more possible augmenting paths.
+
+```pseudo
+\begin{algorithm}
+\caption{Ford-Fulkerson's Algorithm}
+\begin{algorithmic}
+\Procedure{FordFulkerson}{$G, s, t$}
+	\State Initialize $f(e) \gets 0$ for all $e \in E$
+	\State $G_f \gets G$
+	\Comment{Initialize the residual network}
+	\While{$\exists P $ augmenting path $\in G_f$}
+		\State $\Delta_p = \min_{e \in P} c_f(e)$
+		\Comment{$\Delta_p$ is the bottleneck capacity in the network}
+		\ForAll{$e = (u, v) \in P$}
+			\If{$(u, v) \in E$}
+				\State $f(u, v) \gets f(u, v) + \Delta_p$
+			\Else
+				\State $f(v, u) = f(v, u) - \Delta_p$
+            \EndIf
+			\State Update the residual graph $G_f$
+        \EndFor
+    \EndWhile
+	\Return $f$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+
+It follows an example of execution:
+![[graph-ff-exa1.png]]
+![[graph-ff-exa2.png]]
+![[graph-ff-exa3.png]]
+
+##### Complexity
+
+Assuming capacities in the network are integers, them:
+- the flow increases by $\geq 1$ in each iteration
+- the complexity of each iteration is linear with the number of edges $O(m)$
+
+Thus the total complexity is:
+$$
+O(m\cdot |f^\star|)
+$$
+
+This is a bit weird since it depends _on the solution_ instead of the input.
+We can try to constraint it: assuming the size of the graph is $O(m\log U)$, with $U = \max_{e \in E}c(e)$.
+Then:
+$$
+O(m|f^\star|) = O(mnU)
+$$
+which is "pseudo-polynomial".
