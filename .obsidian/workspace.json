@@ -4,24 +4,39 @@
     "type": "split",
     "children": [
       {
-        "id": "439d19fc8cbd7304",
+        "id": "7e66027376d45898",
         "type": "tabs",
         "children": [
           {
-            "id": "4c3fd5f19e602df6",
+            "id": "320367e166b94d7e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Graphs.md",
+                "file": "Deep Learning.md",
                 "mode": "preview",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "Graphs"
+              "title": "Deep Learning"
+            }
+          },
+          {
+            "id": "2f861016f49742cc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Convolutional Neural Networks.md",
+                "mode": "preview",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "Convolutional Neural Networks"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -53,7 +68,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "stochas",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -175,29 +190,39 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "4c3fd5f19e602df6",
+  "active": "2f861016f49742cc",
   "lastOpenFiles": [
-    "images/graph-fw-subproblems.png",
-    "images/Screenshot 2025-03-26 alle 11.27.49.png",
+    "images/cnn-stride-dilation.png",
+    "images/Screenshot 2025-04-10 alle 17.45.55.png",
+    "images/cnn-parameter-sharing.png",
+    "images/Screenshot 2025-04-10 alle 17.16.27.png",
+    "images/cnn-sparse-interactions.png",
+    "images/Screenshot 2025-04-10 alle 17.15.41.png",
+    "images/cnn-convolution-example-2.png",
+    "images/convExample-2608783015.png",
+    "images/cnn-convolution-example.gif",
+    "images/convlayer_overview_demo.gif",
+    "images/cnn-convolution.gif",
+    "Deep Learning.md",
+    "Convolutional Neural Networks.md",
+    "CNN.md",
+    "Optimization (NN).md",
+    "Approximation Algorithms.md",
     "Advanced Algorithms.md",
     "Regularization.md",
-    "images/dl-l2-norm.png",
-    "images/Screenshot 2025-03-25 alle 15.33.10.png",
+    "Complexity Classes and NP-hardness.md",
+    "Coreset Technique.md",
+    "Clustering.md",
     "Deep Neural Networks Training.md",
-    "Deep Learning.md",
-    "images/dl-parameter-norm-penalty.png",
-    "images/Screenshot 2025-03-25 alle 15.13.33.png",
-    "Deep Learning Introduction.md",
-    "Calculus of Communicating Systems.md",
-    "images/dl-high-cn.gif",
-    "images/dl-low-cn.gif",
-    "images/cvwRU.gif",
-    "images/8RPAD.gif",
-    "Graphs.md",
-    "images/graph-bellman-ford.png",
-    "Linear Algebra Cheat Sheet.md",
     "Programming in Spark.md",
+    "Probability Cheat Sheet.md",
+    "Deep Learning Introduction.md",
+    "Graphs.md",
+    "Optimization Problem.md",
     "Big Data Computing.md",
+    "Senza nome",
+    "Calculus of Communicating Systems.md",
+    "Linear Algebra Cheat Sheet.md",
     "Apache Spark.md",
     "Disjoint-Sets.md",
     "Languages for Concurrency and Distribution.md",
@@ -207,9 +232,7 @@
     "documents",
     "Multivariate Calculus Cheat Sheet.md",
     "Information Theory Cheat Sheet.md",
-    "Probability Cheat Sheet.md",
     "MapReduce.md",
-    "images",
-    "Benvenuto.md"
+    "images"
   ]
 }
