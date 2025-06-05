@@ -6,3 +6,7 @@
 - [[Regularization]]
 - [[Optimization (NN)]]
 - [[Convolutional Neural Networks]]
+- [[Sequence Modeling]]
+- [[Graph Neural Networks]]
+- [[Long-Term Dependencies]]
+- [[Transformers]]

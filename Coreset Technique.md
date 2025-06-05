@@ -498,3 +498,114 @@ The general steps are:
 ![[coreset-kmeans.png|center]]
 
 #### Weighted k-means clustering
+
+The following sections will focus on k-means, but with minor adaptations everything remains valid for k-medians too.
+
+k-means is generally easier to solve, since we have valid approximation algorithms (k-means++ and Lloyd), that yield good results and are relatively fast to converge. Lloyd is not applicable to k-medians, since the method it uses to compute the centers only works for squared distances on Euclidean spaces.
+
+**Input**:
+- Pointset $P$ of $N$ points $\in \mathbb{R}^{D}$
+- Integer _weight_ $w(x) > 0\ \forall x \in P$
+- Target number of clusters $k$
+
+**Output**: Set $S$ of $k$ centers in $\mathbb{R}^{D}$ minimizing the objective function:
+$$
+\Phi^{w}_{k-means}(P, S) = \sum_{x \in P} w(x)\cdot d^{2}(x, S) \text{ (weighted variant of k-means)}
+$$
+
+This formulation allows for centers $\in \mathbb{R}^{d}$ outside of the pointset $P$.
+If the points all have unitary weights we obtain the original k-means formulation.
+
+##### Weighted Lloyd's Algorithm
+
+It is straightforward to modify [[#Lloyd's Algorithm (k-means)]] to work with weightes points, it is sufficient to modify the update step so that, for every cluster approximation $C_{t}$ with $m$ points:
+$$
+\frac{1}{m}\sum_{i = 1}^{m} x_{i} \to \frac{1}{\sum_{i=1}^{m}w(x_{i}) }\sum_{i=1}^{m} w(x_{i})^{2}(x_{i})
+$$
+that is we use a weighted mean in place of the arithmetic one.
+
+##### Weighted k-means++
+
+Also for [[#k-means++]] the modifications required are straightforward, it is sufficient to change the probability distribution $\pi$ calculation in the loop, such that it takes the weights into account:
+$$
+\pi(x) \to \frac{d^{2}(x, S)}{\sum_{y \in P \setminus S}d^{2}(y, S) } \to \frac{w(x)\cdot d^{2}(x, S)}{\sum_{y \in P \setminus S}w(y)\cdot d^{2}(y, S) }
+$$
+
+#### Coreset-based MR Algorithm for k-means
+
+We will now provide a MapReduce algorithm for k-means approximation. It requires two sequential algorithms:
+- $\mathcal{A}_{1}$ that solves the standard (unweighted) k-means variant
+- $\mathcal{A}_{2}$ that solves the weighted variant
+
+Both the algorithms need to require space _proportional to the input size_.
+Clearly $\mathcal{A}_{2}$ could be used for both steps by assigning weight one to all the points.
+
+##### Description
+**Input**: Set $P$ of $N$ points in $\mathbb{R}^{D}$, number of target clusters $k > 1$, sequential k-means algorithms $\mathcal{A}_{1}, \mathcal{A}_{2}$ as specified.
+
+**Output**: Set $S$ of $k$ centers $\in \mathbb{R}^{D}$ which is a "good" solution to the k-means problem on $P$ (centers are not required to be $\in P$).
+
+**Round 1**:
+- _MapPhase_: partition $P$ into $l$ subset of equal size $P_{1}, \dots, P_{l}$.
+- _ReducePhase_: for every $i \in [1;l]$ separately run the unweighted sequential algorithm $\mathcal{A}_{1}$ on $P_{i}$ to determine a set $T_{i} \subseteq P_{i}$ of $k$ centers, and define:
+	- For each $x \in P_{i}$ its proxy $\pi(x)$ as its closest center in $T_{i}$
+	- For each $y \in T_{i}$ its weight $w(y)$ as the number of points in $P_{i}$ that are represented by $y$ (i.e $|\{x: \pi(x) = y\}|$)
+	Note that the proxies **must not be stored**, instead the weigths **must be stored**.
+	
+**Round 2**:
+- _MapPhase_: empty
+- _ReducePhase_: run, collecting all the $T_{i}$ in a single reducer, the weighted algorithm $\mathcal{A}_{2}$ on $T = \bigcup_{i = 1}^{l}T_{i}$, with the weights assigned during the previous round. This determines the solution $S = \{ c_{1}, \dots, c_{k} \}$ given in output.
+
+![[coreset-mr-kmeans.png]]
+
+##### Space Analysis
+
+Assume $k \in o(N)$, by setting $l = \sqrt{ \frac{N}{k} }$ it is easy to see that MR-kmeans($\mathcal{A}_{1}, \mathcal{A}_{2}$) requires:
+
+- **Local space**: $M_{L} = O\left( \max{\frac{N}{l}, l\cdot k} \right) = O(\sqrt{ N\cdot k }) = o(N)$ 
+- **Aggregate space**: $M_{A} = O(N)$
+
+for the same reasoning used in [[#MapReduce Farthest-First Traversal#Space Complexity|MR FFT space analysis]].
+
+##### Accuracy Analysis
+
+In order to analyze the quality of the solutions computed by MR-kmeans we need to introduce the following notion:
+
+>**Definition ($\gamma$-coreset)**:
+Given a pointset $P$, a coreset $T \subseteq P$, and a proxy function $\pi: P \to T$, we say that $T$ is a _$\gamma$-coreset_ for $P, k$ and the k-means objective if:
+>
+>$$
+>\sum_{p \in P}d^{2}(p, \pi(p)) \leq \gamma\cdot \Phi^{opt}_{k-means}(P, k)
+>$$
+
+
+![[coreset-y-coreset.png]]
+
+We will show that the coreset used in the algorithm is a $\gamma$-coreset for the original problem.
+Ideally we would like to have a small coreset $T$, so that the algorithm runs faster and in less space, and also to have a small $\gamma$ so that the error is low.
+
+The following theorem (the proof is not provided), gives us the quality of MR-kmeans:
+> **Theorem**:
+> Suppose that:
+> - $\mathcal{A}_{1}$ is a $\gamma$-approximation algorithm for the _unweighted_ k-means problem
+> - $\mathcal{A}_2$ is an $\alpha$-approximation algorithm for the _weighted_ k-means problem
+>
+> Then:
+> - The coreset computed in Round 1 is a $\gamma$-coreset
+> - The solution $S$ computed in Round 2 is such that:
+> $$
+>\Phi_{k-means}(P, S) = O((1+\gamma)\cdot\alpha)\cdot \Phi^{opt}_{k-means}(P, k)
+>$$
+
+Intuitively the formula for the approximation factor shows two contributions:
+1. From the fact that the subset is smaller than $P$: $T \subseteq P$, from which the term $(1+\gamma)$ comes.
+2. From the approximation factor of the final algorithm $\mathcal{A}_{2}$, which contributed with the $\alpha$ term.
+
+##### Final Observations
+
+For k-means (as well as k-center and k-medians) good _coresets_ are obtained by combining solutions to the same problem on _smaller partitions_. However this is **not always the case** (e.g. diameter estimation, diversity maximization).
+
+The MR algorithm explained above is in practice both _fast_ and _accurate_. Typically [[#k-means++]] is used in the first round as $\mathcal{A}_{1}$, and a combination of [[#Weighted k-means++]] and [[#Weighted Lloyd's Algorithm]] is used as $\mathcal{A}_{2}$ in round 2.
+
+It is possible to arbitrarily increase the accuracy of the final solution by increasing the number of representatives included in the coreset $T$. To do so we could run the k-means algorithm on the partitions with a higher number of target centers $h > k$.
+This tends to reduces quite significantly the value of $\gamma$, improving the quality of the final solution.

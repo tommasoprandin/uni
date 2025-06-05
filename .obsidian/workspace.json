@@ -4,39 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "7e66027376d45898",
+        "id": "47d3b5f4aca18d22",
         "type": "tabs",
         "children": [
           {
-            "id": "320367e166b94d7e",
+            "id": "f6a83e164af65b6f",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Deep Learning.md",
+                "file": "Transformers.md",
                 "mode": "preview",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "Deep Learning"
-            }
-          },
-          {
-            "id": "2f861016f49742cc",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Convolutional Neural Networks.md",
-                "mode": "preview",
-                "source": true
-              },
-              "icon": "lucide-file",
-              "title": "Convolutional Neural Networks"
+              "title": "Transformers"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -190,28 +175,38 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "2f861016f49742cc",
+  "active": "f6a83e164af65b6f",
   "lastOpenFiles": [
-    "images/cnn-stride-dilation.png",
-    "images/Screenshot 2025-04-10 alle 17.45.55.png",
-    "images/cnn-parameter-sharing.png",
-    "images/Screenshot 2025-04-10 alle 17.16.27.png",
-    "images/cnn-sparse-interactions.png",
-    "images/Screenshot 2025-04-10 alle 17.15.41.png",
-    "images/cnn-convolution-example-2.png",
-    "images/convExample-2608783015.png",
-    "images/cnn-convolution-example.gif",
-    "images/convlayer_overview_demo.gif",
-    "images/cnn-convolution.gif",
+    "images/dl-transformer-crossatt.png",
+    "images/Screenshot 2025-05-27 alle 21.53.55.png",
+    "images/dl-transformer-decoding.png",
+    "images/Screenshot 2025-05-27 alle 21.51.52.png",
+    "images/dl-transformer-stack.png",
+    "images/Screenshot 2025-05-27 alle 21.35.27.png",
+    "Transformers.md",
+    "images/dl-transformer-norm.png",
+    "images/Screenshot 2025-05-27 alle 21.32.33.png",
     "Deep Learning.md",
+    "images/dl-multihead-attention.png",
+    "images/Screenshot 2025-05-27 alle 21.26.05.png",
+    "images/dl-attention-arch2.png",
+    "Languages for Concurrency and Distribution.md",
+    "Exercise 1.md",
+    "Calculus of Communicating Systems.md",
+    "images/Two-architectures-of-word2vec-CBOW-and-Skip-gram-24-1824508948.ppm",
+    "Long-Term Dependencies.md",
+    "Sequence Modeling.md",
+    "Graph Neural Networks.md",
+    "Approximation Algorithms.md",
+    "Advanced Algorithms.md",
+    "Big Data Computing.md",
+    "Streaming.md",
+    "Complexity Classes and NP-hardness.md",
+    "Coreset Technique.md",
     "Convolutional Neural Networks.md",
     "CNN.md",
     "Optimization (NN).md",
-    "Approximation Algorithms.md",
-    "Advanced Algorithms.md",
     "Regularization.md",
-    "Complexity Classes and NP-hardness.md",
-    "Coreset Technique.md",
     "Clustering.md",
     "Deep Neural Networks Training.md",
     "Programming in Spark.md",
@@ -219,20 +214,11 @@
     "Deep Learning Introduction.md",
     "Graphs.md",
     "Optimization Problem.md",
-    "Big Data Computing.md",
     "Senza nome",
-    "Calculus of Communicating Systems.md",
-    "Linear Algebra Cheat Sheet.md",
-    "Apache Spark.md",
-    "Disjoint-Sets.md",
-    "Languages for Concurrency and Distribution.md",
     "documents/dl-backpropagation-exa.pdf",
     "documents/Backpropagation lecture notes.pdf",
     "Backpropagation lecture notes.pdf",
     "documents",
-    "Multivariate Calculus Cheat Sheet.md",
-    "Information Theory Cheat Sheet.md",
-    "MapReduce.md",
     "images"
   ]
 }

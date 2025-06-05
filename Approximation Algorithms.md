@@ -86,3 +86,269 @@ A better algorithm is the following one:
 \end{algorithmic}
 \end{algorithm}
 ```
+
+#### Time Analysis
+
+This algorithm has time complexity of
+$$
+O(n+m)
+$$
+since it traverses the graph linearly
+
+#### Approximation Analysis
+
+We will show that this is a 2-approximation algorithm:
+$$
+ \frac{|V'|}{|V^{\star}|} = 2
+$$
+
+First let $A$ be the set of selected edges, we say that $A$ **is a matching** if:
+$$
+\forall e, e' \in A \implies e \cap e' = \emptyset
+$$
+that is, there are no vertices in common. 
+
+![[appalg-matching-exa.png]]
+
+We observe that the algorithm selects a **maximal** matching (i.e. the one with most edges):
+$$
+\forall y \in E, A \cup y \text{ is not a matching}
+$$
+this comes naturally from the steps of the algorithm.
+
+1. $\frac{|V'|}{|V^{\star}|} \leq 2$
+
+	$A$ is a matching $\implies$ in $V^{\star}$ there must be at least one vertex for every edge $\in A$, or $V^{\star}$ would not cover the graph $G$:
+	$\implies |V^{\star}| \geq |A|$.
+
+	By construction of the algorithm that picks two endpoints per edge it means that:
+	$\implies |V'| = 2|A|$
+
+	Thus: $\implies |V'| = 2|A| \leq 2|V^{\star}| \implies \frac{|V'|}{|V^{\star}|} \leq 2$.
+2. Now we observe very simply that if $A$ is a maximal matching, it means that the optimal solution picks exactly one endpoint per edge in $A \implies |V^{\star}| = |A|$.
+
+	Thus: $|V'| = 2|A| = 2|V^{\star}| \implies$ Approx-Vertex Cover is exactly a $2$-approximation algorithm.
+
+### Travelling Salesperson Problem
+
+**Definition**: given a _complete_, _undirected_ graph $G = (V, E)$, and a positive weight for every edge: $w: E \to \mathbb{R}^{+}$, it outputs a _tour_ (cycle that touches every vertex exactly once) $T  \subseteq E$ that minimizes the total cost $\sum_{e \in T}w(e)$.
+We can consider only positive weigths without loss of generality, because every TSP tour has the same number of edges ($n$), so we can add a large _offset_ to every edge such that all the edges have non-negative weights. This does not change the actual solution.
+
+Unfortunately there is **no possible $\rho(n)$-approximation** for TSP (unless $P = NP$).
+
+**Proof**:
+We will prove this by showing that, supposing we had a $\rho$-approximate TSP in polynomial time, we could solve [[Complexity Classes and NP-hardness#^c21261|Hamiltonian Circuit]], which is NP-hard.
+
+The reduction is almost identical to the one presented [[Complexity Classes and NP-hardness#Travelling Salesman Problem|here]], except that the weight function becomes:
+$$
+w(e \in E') = \begin{cases}
+1 & \text{if } e \in E \\
+\rho\cdot n+1 & \text{otherwise}
+\end{cases}
+$$
+Instead of picking $+\infty$ for $e \not\in E$, we put a "bound" on how far apart the nodes are. In other words $\rho\cdot n+1$ becomes a "sentinel" value that tells us that TSP has picked an edge not in $E$ originally.
+
+Now either:
+1. $G$ has an Hamiltonian Circuit $\implies$ there is a tour of cost $n \implies$ approx-TSP on $G'$ returns a tour of cost $\leq \rho\cdot n$ (because its a $\rho$ approximation)
+2. $G$ has no Hamiltonian Circuit $\implies$ approx-TSP on $G'$ returns a tour of cost $\geq \rho\cdot n + 1 > \rho \cdot n$, because it will be forced to pick at least one edge not in $E$.
+
+This proves that, if we could approximate TSP withing a factor $\rho$ in polynomial time, we could also solve Hamiltonian Circuit in polynomial time.
+
+#### Metric TSP
+
+While TSP is not $\rho$-approximable in polynomial time (unless $P = NP$), there are some variants that can be.
+
+One of the most common _special case_ is _metric TSP_, in which the weight function satisfies the **triangle inequality**:
+$$
+\forall u, v, z \in V: w(u, z) \leq w(u, v) + w(v, z)
+$$
+i.e. it is always faster to go directly instead of passing through another node.
+
+It is called _metric_, because with this additional property it creates a _metric space_ $(V, w)$.
+
+Unfortunately metric TSP **is still NP-hard**.
+**Proof**:  TSP $\leq_{P}$ Metric TSP
+
+The idea is pretty intuitive: as we [[#Travelling Salesperson Problem|observed previously]] for TSP to remove negative weights, we could add an offset to all the edges equally, without changing the solution.
+
+If we take the largest weight in the graph's edges, and add it to all of them, we observe that the resulting weight function satisfies triangle inequality.
+
+In fact let's analyze the basic triangular structure with weights $a, b, c$, and suppose $o = \max\{ a, b, c \}$. Then adding $o$ to all the edges we obtain:
+$$
+\begin{align}
+a' = a + o \\
+b' = b + o \\
+c' = c + o \\
+\end{align}
+$$
+But now for any combination we are guaranteed that they satisfy triangle inequality:
+$$
+\begin{align}
+a' = a+o  & \leq b' + c' = b + c + 2o \\
+a + \max\{ a,b, c \}  & \leq b + c + 2\max\{ a, b, c \} \\
+a & \leq b + c + \max\{ a, b, c \}
+\end{align}
+$$
+which is clearly true that for any $a \geq 0$ it will be no larger than the max between the three sides plus a non-negative amount. The same argument remains valid by considering the other edges.
+This proves that modifying the weights in this way ensures that the weight function **satisfies triangle inequality**.
+
+Now we have to prove that this modification is valid for solving TSP, but this is straightforward.
+We observe that, by applying the reduction on $G$ as specified:
+$$
+<G = (V, E), w, k>\  \mapsto\ <G' = (V, E), w', k'>
+$$
+with weights updated:
+$$
+w'(u, v) = w(u, v) + \underbrace{ \max_{u, v \in V}w(u, v) }_{ =W }
+$$
+we obtain that the solution of cost $k$ in the original problem becomes:
+$$
+k' = k + nW
+$$
+since we have added the same offset $W$ in all the edges, and there exactly $n$ edges in any TSP tour in a graph with $n$ vertices.
+
+This implies:
+$$
+\exists \text{ Ham. Circuit of cost } k \in G \iff \exists \text{ Ham. Circuit of cost } k' \in G'
+$$
+proving the reduction.
+
+##### A 2-approx Algorithm for Metric TSP
+
+The idea behind an approximation for metric TSP is to use an [[Graphs#Minimum Spanning Tree|MST]], which by definition connects with minimum cost all the vertices, then take shortcuts to avoid passing again through the same edges. The shortcuts are guaranteed to exist because the graph is _complete_. Furthermore, since we are in a **metric space**, going directly to a target vertex through the shortcut surely costs _no more_ than reaching it though an intermediate node.
+
+![[aalg-metrictsp-approx.png]]
+
+The operation of obtaining such _cycle_ from an MST is called **preorder**:
+```pseudo
+\begin{algorithm}
+\caption{Preorder Algorithm}
+\begin{algorithmic}
+\Procedure{Preorder}{$T, v$}
+	\State \Call{Print}{$v$}
+	\If{$v$ is internal (not a leaf)}
+		\ForAll{$u \in $ \Call{Children}{$v$}}
+			\State\Call{Preorder}{$u$}
+        \EndFor
+    \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+This follows a traversal very similar to [[Graphs#Depth First Search Algorithm|DFS]].
+![[aalg-preorder-exa.png]]
+
+Then, by appending the root at the end of the list, we obtain an **Hamiltonian circuit** of the original graph.
+
+###### Algorithm
+
+```pseudo
+\begin{algorithm}
+\caption{Approx Metric TSP Algorithm}
+\begin{algorithmic}
+	\Procedure{ApproxMetricTSP}{$G$}
+		\State $V \gets \{v_1, v_2, \dots, v_n\}$
+		\State $r \gets v_1$
+		\State $T^\star \gets$ \Call{Prim}{$G, r$}
+		\State $H' = <v_{i_1}, \dots, v_{i_n}> \gets$ \Call{Preorder}{$T^\star, r$}
+		\Comment{Cycle around the MST}
+		\Return $<H^\star, v_{i_1}>$
+		\Comment{Add back the starting point to create a cycle}
+    \EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+
+###### Analysis
+
+As mentioned in the introduction, the intuition behind is that we start from a MST that connects all vertices with minimum cost, and then by relying on the fact that we have a metric space, we know that (by triangular inequality), the shortcuts will not increase the cost.
+
+1. **Lower bound to the cost of** $H^{\star}$.
+	We know that $H^{\star}$ is a tour with $n$ edges. Now let $T'$ be a tree obtained by removing one edge from $H$. Since $T^{\star}$ is a MST with $n-1$ edges (because its a tree), There cannot be a tree of $n-1$ edges with lower cost than $T^{\star}$ (or it would not be an MST), hence:
+	$$
+		w(H^{\star}) \geq w(T') \geq w(T^{\star})
+	$$
+2. **Upper bound to the cost of** $H^{\star}$.
+	We start by defining a **full preorder chain**, which is a list with repetitions of the vertices of the tree built by adding in order the vertices reached from the recursive calls of _preorder_
+	![[aalg-fullpreorder-exa.png]]
+	By construction we observe that:
+	$$
+	w(fpc) = 2w(T^{\star})
+	$$
+	since every edge of $T^{\star}$ appears _exactly_ twice in a fpc.
+
+	Now, by applying the shortcuts, and using the triangular inequality (because the space is metric), we prove the 2 approximation:
+	$$
+	\begin{align}
+	2w(T^{\star}) & =w(<a, b, c, b, d, b, a, e, a>) \\
+	& \geq w(<a, b, c, \cancel{b}, d, b, a, e, a>) \\
+	& \geq w(<a, b, c, d, \cancel{b}, \cancel{a}, e, a>) \\
+	& \geq w(<a, b, c, d, e, a>) \\
+	& \implies 2w(T^{\star}) \geq w(H)
+	\end{align}
+	$$
+
+Now, putting pieces together:
+$$
+\begin{align}
+ & w(H^{\star}) \geq w(T^{\star}) \\
+ & 2w(T^{\star}) \geq w(H) \\
+ & \implies 2w(H^{\star}) \geq 2w(T^{\star}) \geq w(H) \\
+ & \implies \frac{w(H)}{w(H^{\star})} \leq 2
+\end{align}
+$$
+
+This instance of the problem shows that the bound is _tight_:
+![[aalg-metrictspapprox-exa.png]]
+
+##### A 3/2-approx Algorithm for Metric TSP (Christofides' Algorithm)
+
+The reason for the 2-approximation factor of the algorithm above was that the preorder traversal of $T^{\star}$ **crossed every edge of it exactly twice**. In the worst case the shortcuts will not improve the cost of $T^{\star}$ at all (think of a degenerate triangle with the "long" edge being as long as the sum of the other two).
+
+Obviously to improve this we need to find a way to traverse the MST edges **only once**.
+
+The idea is to use the notion of **Eulerian cycles**: an _Eulerian cycle_ is a path that crosses every edge of the graph _exactly once_.
+A connected graph in which an Eulerian cycle exists is call Eulerian.
+
+By definition, if the MST was Eulerian (which is impossible being a tree), we would actually have the solution, since the MST covers all nodes with minimum cost, and thus by being Eulerian there would be a tour of minimum cost between all nodes.
+
+[[#A 2-approx Algorithm for Metric TSP|Approx-metric TSP]] finds a cheap Eulerian cycle using the MST, but it needs to _double its edges_.
+
+Can we find a cheaper Eulerian cycle?
+
+A famous theorem gives us an important result:
+> **Theorem**: A connected graph is Eulerian $\iff$ every vertex has even degree
+
+![[aalg-odd-degrees.png]]
+
+Thus, we need to handle the odd-degree vertices of the MST, in order to obtain an Eulerian graph.
+
+> **Property**: In any (finite) graph the number of vertices of odd-degree is _even_
+
+**Proof**:
+$$
+\begin{align}
+ \sum_{v \in V}deg(v) &  = 2m \\
+ \underbrace{ \sum_{even} deg(v) }_{ \text{even because even n of terms} } + \underbrace{ \sum_{odd}deg(v) }_{\text{must be even} } & = \underbrace{ 2m }_{ \text{even by construction} } \\
+\end{align}
+$$
+
+So the **idea** is to augment the initial MST $T^{\star}$ with a minimum-weight _perfect matching_ (i.e. that includes _all_ the vertices) between all the vertices that have odd degree in the MST, so that they become even degree $\implies$ the resulting graph is Eulerian.
+
+###### Algorithm
+```pseudo
+\begin{algorithm}
+\caption{Christofides' Algorithm}
+\begin{algorithmic}
+\Procedure{Christofides}{$G$}
+	\State $T^\star \gets $ \Call{Prim}{$G, r$}
+	\State Let $D$ be the set of vertices of $T^\star$ with odd degree. Compute a min-weight perfect matching $M^\star$ on the graph induced by $D$.
+	\State The graph $(V, E^\star \cup M^\star)$ is Eulerian. Compute an Eulerian cycle on this graph.
+	\Return The cycle that visits all the vertices of $G$ in the order of their first appearance in the Eulerian cycle.
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+
+![[aalg-christ-exa1.png]]
+![[aalg-christ-exa2.png]]
