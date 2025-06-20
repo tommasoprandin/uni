@@ -325,6 +325,8 @@ Thus, we need to handle the odd-degree vertices of the MST, in order to obtain a
 
 > **Property**: In any (finite) graph the number of vertices of odd-degree is _even_
 
+^1bd387
+
 **Proof**:
 $$
 \begin{align}
@@ -352,3 +354,179 @@ So the **idea** is to augment the initial MST $T^{\star}$ with a minimum-weight 
 
 ![[aalg-christ-exa1.png]]
 ![[aalg-christ-exa2.png]]
+
+###### Analysis
+
+1. $w(H) \leq w(T^{\star}) + w(M^{\star})$, since in the worst case we have to pick all the edges in $T^{\star}$ and $M^{\star}$, but we may have shortcuts.
+2. $w(T^{\star}) \leq w(H^{\star})$ since $H^{\star}$ has $n$ edges and $T^{\star}$ is a tree of minimum cost (with $n-1$ edges).
+3. $w(M^{\star}) \leq \frac{1}{2}w(H^{\star A})$.
+	Consider an optimal tour of the odd-degree vertices of $T^{\star}$, we know by [[#^1bd387| this property]] that the number of vertices (and thus edges) is even.
+
+	We also know that
+	$$
+	w(\text{optimal odd-degree tour}) \leq w(H^{\star})
+	$$
+	since it's a tour with less vertices of the graph.
+
+	Since the number of odd-degree vertices is even, we can partition the tour in two perfect matchings, one of the two must have weigth $\leq \frac{w(H^{\star})}{2}$ (since their sum is $w(H^{\star})$ at most).
+
+	But both have weight $\geq w(M^{\star})$ by definition, since $M^{\star}$ is a min-cost perfect matching between odd-degree vertices.
+	$$
+	\implies w(M^{\star}) \leq \frac{w(H^{\star})}{2}
+	$$
+
+Finally, putting pieces together:
+$$
+\begin{align}
+w(H)  & \leq w(H^{\star}) + w(M^{\star}) \\
+ & \leq w(H^{\star}) + \frac{w(H^{\star})}{2} = \frac{3}{2}w(H^{\star})
+\end{align}
+$$
+
+### Set Cover
+
+Let's define the **Set Cover** problem:
+$$
+\begin{align}
+ & I = (X, F) \\
+ & X = \text{set of elements, called universe} \\
+ & F \subseteq \mathcal{B}(X) \text{ the set of all subsets of } X
+\end{align}
+$$
+
+The constraint is that $\forall x \in X \ \ \exists S \in F$ such that $x \in S$, that is "$F$ covers $X$".
+
+The optimization problem consists in finding the smallest $F' \subseteq F$ such that:
+1. $F'$ covers $X$
+2. $|F'|$ is minimal
+
+**Example**:
+$X = \{ 1, 2, 3, 4, 5 \}$
+$F = \{ \{ 1, 2, 3 \}, \{ 2, 4 \}, \{ 3, 4 \}, \{ 4, 5 \} \}$
+
+Hence $F' = \{ \{ 1, 2, 3 \}, \{ 4, 5 \} \}$
+
+> **Theorem**: Set Cover (in its decision form) is NP-hard.
+
+**Proof**: Vertex Cover $\leq_{P}$ Set Cover
+
+The reduction is simple:
+We start from the original graph for Vertex Cover $G = (V, E)$ with target $k$ vertices, and we transform it into a Set Cover problem with:
+- $X = E$ (i.e. we want to cover all the edges)
+- $F = \{S_{1}, \dots, S_{n} \}$, with $S_{i} = \{ (u, v) \in E \mid u =i \lor v=i \}$ (i.e. the $i$-th subset contains all the incident edges of the $i$-th node)
+
+With this it's immediate to show that:
+$\exists$ a set cover of size $k$ $\iff$ $\exists$ a vertex cover of size $k$
+
+#### Approximation Algorithm (Greedy Approach)
+
+One simple approximation algorithm is the following one:
+1. Choose the subset $S \in F$ that contains (i.e. **covers**) the **most uncovered elements from $X$**.
+2. Remove from $X$ the covered elements
+3. Repeat the steps until there are no more elements to cover (i.e. $X = \emptyset$).
+
+```pseudo
+\begin{algorithm}
+\caption{Set Cover Approximation Algorithm}
+\begin{algorithmic}
+\State $U \gets X$
+\State $F' \gets \emptyset$
+\While{$U \neq \emptyset$}
+	\State $S' \gets \arg\max_{S \in F}{|S \cap U|}$
+	\State $U \gets U \setminus S'$
+	\State $F \gets F \setminus \{S'\}$
+	\State $F' \gets F' \cup \{S'\}$
+\EndWhile
+\Return $F'$
+\end{algorithmic}
+\end{algorithm}
+```
+
+#### Analysis
+
+##### Correctness
+By construction at every iteration the size of the uncovered elements $|U|$ decreases by **at least one**.
+
+##### Complexity
+Again, by construction, we observe that:
+- The number of iterations is $\leq |X|$, since at worst every new subset only contains one uncovered element from $X$ 
+- The number of iterations is also $\leq |F|$, since at most we would need all the subsets from $F$ to cover the set
+Hence, the number of iterations is surely $\leq \min{\{ |X|, |F| \}}$.
+
+The per-iteration complexity is $\leq |X||F|$, since we need to check for every element in $X$ every subset in $F$.
+
+Thus, the total complexity for the algorithm is:
+$$
+O(|X||F|\min\{ |X|, |F| \})
+$$
+which is **at most cubic** in the input size.
+
+Note that with the "right" data structure it can be implemented in $O(|X| + |F|)$ (i.e. in **linear time**).
+
+##### Approximation
+
+We will now show that this is a $\lceil \log_{2}n \rceil + 1$-approximation algorithm:
+$$
+\frac{|F'|}{|F^{\star}|} \leq \lceil  \log_{2}n \rceil + 1 \quad (n = |X|)
+$$
+
+The idea is to try to bound the number of iterations such that the set of **remaining elements $U$** gets empty.
+
+Let's define:
+- $U_{0} = X$ the remaining elements at the beginning
+- $U_{i}$ the remaining elements at the **end** of the $i$-th iteration
+- $|F^{\star}| = k$ the size of the cover, which is unknown
+
+> **Lemma**: After the first $k$ iterations the residual universe _at least halved_ in size, that is:
+> $$|U_{k}| \leq \frac{n}{2}$$
+
+**Proof**:
+First we observe that:
+$U_{k} \subseteq X \implies$ $U_{k}$ admits a cover of size $\leq k$ (being smaller of $X$), with the cover all in $F$ (i.e. **not currently selected** by the algorithm).
+
+We can characterize such cover as:
+$$
+T_{1}, T_{2}, \dots, T_{k} \in F\quad \bigcup T_{i} \text{ covers } U_{k}
+$$
+By the _pigeonhole_ principle, since we have at least have as many elements (pigeons) as we have subsets in which they are partitioned (pigeonholes), $\exists \bar{T}$ such that $|U_{k} \cap \bar{T}| \geq \frac{|U_{k}|}{k}$.
+
+We will now see that in the first $k$ iterations, for each iteration  at least $\frac{|U_{k}|}{k}$ elements get covered.
+Let $S_{i} \in F, 1 \leq i \leq k$ be the selected subsets $\implies |S_{i} \cap U_{i}| \geq |T_{j} \cap U_{i}|, \forall 1\leq j\leq k$, since $T_{j}$ has not been selected, hence by construction it's smaller than $S_{j}$.
+
+This also holds for $\bar{T}$, that is:
+$$
+|S_{i} \cap U_{i}| \geq |\bar{T} \cap U_{i}| \geq |\bar{T} \cap U_{k}| \geq \frac{|U_{k}|}{k}
+$$
+Hence after the first $k$ iterations the algorithm has covered $\geq \frac{|U_{k}|}{k}\cdot k = |U_{k}|$ elements.
+$$
+\begin{align}
+\implies \underbrace{ |U_{k}| }_{\text{residual}} \le \underbrace{ n - |U_{k}| }_{ \text{covered} } \\
+|U_{k}| \leq \frac{n}{2}
+\end{align}
+$$
+
+
+This lemma implies that after $k\cdot i$ iterations the size of the uncovered set has decreased exponentially: $|U_{ki}| \leq \frac{n}{2^{i}}$.
+Hence the number of necessary iterations in order to empty $U$ is $\lceil \log_{2}n \rceil\cdot k + 1$ at each iteration $|F'|++$.
+
+Thus to conclude
+$$
+\begin{align}
+ & \implies |F'| \leq \lceil \log_{2}n \rceil k + 1 \\
+ & \implies |F'| \le \lceil \log_{2}n \rceil |F^{\star}| + 1
+\end{align}
+$$
+
+**Example**
+One possible input that shows that the bound is tight is the following one:
+Assume $X$ has $n = 2^{(k+1)} - 2$ elements for some $k \in \mathbb{N}$.
+
+Then $F$ has:
+1. $k$ pairwise disjoint sets $S_{1}, \dots, S_{k}$ with sizes $2^{1}, \dots, 2^{k}$
+2. Two additional disjoint sets $T_{0}, T_{1}$ each of which contains half of the elements from each $S_{i}$.
+
+![[aalg-approx-setcover.png]]
+
+The approximate greedy algorithm would choose $S_{k}, S_{k-1}, \dots, S_{0}$, while the optimal cover would be $\{ T_{0}, T_{1} \}$.
+
+Thus the approximate algorithm has size $\Theta(\log n)$.
